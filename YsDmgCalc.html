@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原神伤害计算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .form-group label {
+            width: 200px;
+            margin-right: 10px;
+        }
+        .form-group input {
+            flex: 1;
+            padding: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .optional {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>原神伤害计算器 <small><small><small>(单个输入框内可加减乘除)</small></small></small></h1>
+
+    <div class="form-group">
+        <label for="base-damage">角色数值：</label>
+        <input type="text" id="base-damage" placeholder="请输入角色攻击力/生命值/防御力，基础数值+基础数值*百分比加成+其他数值加成" required>
+    </div>
+
+    <div class="form-group">
+        <label for="multiplier">倍率：</label>
+        <input type="text" id="multiplier" placeholder="技能/普攻/重击/下落倍率" required>
+    </div>
+
+    <div class="form-group">
+        <label for="crit-damage">暴击伤害：</label>
+        <input type="text" id="crit-damage" placeholder="请输入角色暴击伤害" required>
+    </div>
+
+    <div class="form-group">
+        <label for="bonus-damage">增伤：</label>
+        <input type="text" id="bonus-damage" placeholder="各种增伤相加" required>
+    </div>
+
+    <div class="form-group">
+        <label for="reaction-multiplier" class="optional">元素反应基础倍率：</label>
+        <input type="text" id="reaction-multiplier" placeholder="火打水蒸发1.5倍/融化2倍,水打火蒸发2倍,冰打火融化1.5倍">
+    </div>
+
+    <div class="form-group">
+        <label for="elemental-mastery" class="optional">元素精通：</label>
+        <input type="text" id="elemental-mastery" placeholder="角色元素精通">
+    </div>
+
+    <div class="form-group">
+        <label for="reaction-bonus" class="optional">反应系数提升：</label>
+        <input type="text" id="reaction-bonus" placeholder="例:魔女套、莫娜一命蒸发反应造成伤害提升15%">
+    </div>
+
+    <div class="form-group">
+        <label for="enemy-resistance" class="optional">怪物抗性：</label>
+        <input type="text" id="enemy-resistance" placeholder="大多数怪物抗性为10%">
+    </div>
+
+    <div class="form-group">
+        <label for="defense-reduction" class="optional">减防系数：</label>
+        <input type="text" id="defense-reduction" placeholder="火神二命:焚曜之环附近的敌人的防御力降低20%;雷神二命:奥义·梦想真说的梦想一刀与梦想一心状态下的雷电将军的攻击将无视敌人60%的防御力">
+    </div>
+
+    <div class="form-group">
+        <label for="damage-boost" class="optional">造成伤害提升：</label>
+        <input type="text" id="damage-boost" placeholder="请输入造成伤害提升值,例:火神二命坠日斩造成的伤害提升;闲云天赋5:场上角色的下落攻击坠地冲击造成的伤害提升;茜特菈莉一命提升场上角色造成的伤害">
+    </div>
+
+    <div class="form-group">
+        <label for="character-level" class="optional">角色等级：</label>
+        <input type="text" id="character-level" placeholder="请输入角色等级,不输入则计算直伤">
+    </div>
+
+    <div class="form-group">
+        <label for="enemy-level" class="optional">怪物等级：</label>
+        <input type="text" id="enemy-level" placeholder="请输入怪物等级">
+    </div>
+
+    <button onclick="calculateDamage()" style="background-color: rgb(99,150,232); color: rgb(0, 0, 0); border: none; padding: 10px 20px; cursor: pointer;">计算伤害</button>
+
+    <div id="result"></div>
+
+    <script>
+        // 计算伤害的函数
+        function calculateDamage() {
+            // 获取并转换输入的数值
+            const baseDamage = parseInput(document.getElementById('base-damage').value);
+            const multiplier = parseInput(document.getElementById('multiplier').value);
+            const critDamage = adjustValue(parseInput(document.getElementById('crit-damage').value));
+            const bonusDamage = adjustValue(parseInput(document.getElementById('bonus-damage').value));
+            const reactionMultiplier = parseInput(document.getElementById('reaction-multiplier').value);
+            const elementalMastery = parseInput(document.getElementById('elemental-mastery').value);
+            const reactionBonus = parseInput(document.getElementById('reaction-bonus').value) || 0;
+            const enemyResistance = parseInput(document.getElementById('enemy-resistance').value);
+            const defenseReduction = parseInput(document.getElementById('defense-reduction').value) || 0;
+            const damageBoost = parseInput(document.getElementById('damage-boost').value) || 0;
+            const characterLevel = parseInput(document.getElementById('character-level').value);
+            const enemyLevel = parseInput(document.getElementById('enemy-level').value);
+
+            // 基础伤害计算
+            let finalDamage = baseDamage * multiplier * critDamage * bonusDamage;
+
+            // 计算元素反应（只有当输入了反应倍率时才计算）
+            if (reactionMultiplier && !isNaN(reactionMultiplier)) {
+                const reaction = reactionMultiplier * (1 + ((elementalMastery || 0) * 2.78) / ((elementalMastery || 0) + 1400) + reactionBonus);
+                finalDamage *= reaction;
+            }
+
+            // 计算怪物抗性（只有当输入了抗性时才计算）
+            if (enemyResistance !== null && !isNaN(enemyResistance)) {
+                let enemyDamageReduction;
+                if (enemyResistance > 0.75) {
+                    enemyDamageReduction = 1 / (1 + enemyResistance);
+                } else if (enemyResistance >= 0) {
+                    enemyDamageReduction = 1 - enemyResistance;
+                } else {
+                    enemyDamageReduction = 1 - enemyResistance / 2;
+                }
+                finalDamage *= enemyDamageReduction;
+            }
+
+            // 计算防御（只有当输入了角色等级和怪物等级时才计算）
+            if (characterLevel && enemyLevel && !isNaN(characterLevel) && !isNaN(enemyLevel)) {
+                const defense = (characterLevel + 100) / ((characterLevel + 100) + (enemyLevel + 100) * (1 - defenseReduction));
+                finalDamage *= defense;
+            }
+
+            // 计算伤害提升（只有当输入了伤害提升时才计算）
+            if (damageBoost && !isNaN(damageBoost)) {
+                let damageBoosts = damageBoost * critDamage * bonusDamage;
+                
+                // 应用相同的条件计算
+                if (reactionMultiplier && !isNaN(reactionMultiplier)) {
+                    const reaction = reactionMultiplier * (1 + ((elementalMastery || 0) * 2.78) / ((elementalMastery || 0) + 1400) + reactionBonus);
+                    damageBoosts *= reaction;
+                }
+                if (enemyResistance !== null && !isNaN(enemyResistance)) {
+                    let enemyDamageReduction;
+                    if (enemyResistance > 0.75) {
+                        enemyDamageReduction = 1 / (1 + enemyResistance);
+                    } else if (enemyResistance >= 0) {
+                        enemyDamageReduction = 1 - enemyResistance;
+                    } else {
+                        enemyDamageReduction = 1 - enemyResistance / 2;
+                    }
+                    damageBoosts *= enemyDamageReduction;
+                }
+                if (characterLevel && enemyLevel && !isNaN(characterLevel) && !isNaN(enemyLevel)) {
+                    const defense = (characterLevel + 100) / ((characterLevel + 100) + (enemyLevel + 100) * (1 - defenseReduction));
+                    damageBoosts *= defense;
+                }
+                
+                finalDamage += damageBoosts;
+            }
+
+            // 显示结果
+            document.getElementById('result').innerHTML = `<span style="background: linear-gradient(to right, #ff7e5f, #feb47b); -webkit-background-clip: text; color: transparent;">最终伤害: ${finalDamage.toFixed(2)}</span>`;
+        }
+
+        // 解析输入，计算数学表达式（支持百分比）
+        function parseInput(inputValue) {
+            if (!inputValue || inputValue.trim() === '') return null;
+            
+            // 将中文括号和符号替换为英文
+            inputValue = inputValue.replace(/（/g, '(').replace(/）/g, ')')
+                                 .replace(/×/g, '*').replace(/÷/g, '/');
+            
+            // 处理百分比输入
+            inputValue = inputValue.replace(/([0-9.]+)%/g, function(match, p1) {
+                return p1 / 100;
+            }).replace(/%/g, '/100');
+
+            try {
+                const sanitizedInput = inputValue.replace(/[^0-9+\-*/().]/g, '');
+                if (sanitizedInput === '') return null;
+                const result = eval(sanitizedInput);
+                return isNaN(result) ? null : result;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        // 处理暴击伤害、增伤等值的输入
+        function adjustValue(value) {
+            if (value === null || isNaN(value) || value === 0) {
+                return 1;
+            }
+            return value + 1;
+        }
+    </script>
+</body>
+</html>
