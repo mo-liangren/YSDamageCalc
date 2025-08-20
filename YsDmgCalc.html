@@ -6,104 +6,407 @@
     <title>原神伤害计算器</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
         .form-group {
             display: flex;
             align-items: center;
-            margin: 10px 0;
+            margin: 15px 0;
         }
+        
         .form-group label {
             width: 200px;
             margin-right: 10px;
-        }
-        .form-group input {
-            flex: 1;
-            padding: 8px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        #result {
-            margin-top: 20px;
-            font-size: 20px;
             font-weight: bold;
         }
+        
+        .form-group input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        
         .optional {
-            color: #666;
+            color: #7f8c8d;
             font-style: italic;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 14px 28px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #calculate-btn {
+            background: linear-gradient(to right, #4CAF50, #2E8B57);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        #tutorial-btn {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        
+        /* 教程模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 40px auto;
+            padding: 35px;
+            border-radius: 12px;
+            width: 85%;
+            max-width: 800px;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.4s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+            transition: color 0.3s;
+        }
+        
+        .close:hover {
+            color: #e74c3c;
+        }
+        
+        .tutorial-header {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 15px;
+        }
+        
+        .tutorial-step {
+            margin-bottom: 25px;
+            padding: 18px;
+            border-left: 5px solid #3498db;
+            background-color: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .tutorial-step h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+        
+        .step-number {
+            background-color: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .example {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-family: monospace;
+            border-left: 3px solid #3498db;
+        }
+        
+        .highlight {
+            background-color: #fff8e1;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+        
+        .note {
+            background-color: #ffecb3;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+            font-size: 14px;
+            border-left: 3px solid #ff9800;
+        }
+        
+        .defense-examples {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+        
+        .defense-examples li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <h1>原神伤害计算器 <small><small><small>(单个输入框内可加减乘除)</small></small></small></h1>
+    <div class="container">
+        <h1>原神伤害计算器</h1>
+        <div class="subtitle">(单个输入框内可加减乘除，支持百分比输入如 "50%")</div>
 
-    <div class="form-group">
-        <label for="base-damage">角色数值：</label>
-        <input type="text" id="base-damage" placeholder="请输入角色攻击力/生命值/防御力，基础数值+基础数值*百分比加成+其他数值加成" required>
+        <div class="form-group">
+            <label for="base-damage">角色数值：</label>
+            <input type="text" id="base-damage" placeholder="例如: 2000+2000*0.466+311" required>
+        </div>
+
+        <div class="form-group">
+            <label for="multiplier">倍率：</label>
+            <input type="text" id="multiplier" placeholder="例如: 200% 或 2.0" required>
+        </div>
+
+        <div class="form-group">
+            <label for="crit-damage">暴击伤害：</label>
+            <input type="text" id="crit-damage" placeholder="例如: 150% 或 1.5" required>
+        </div>
+
+        <div class="form-group">
+            <label for="bonus-damage">增伤：</label>
+            <input type="text" id="bonus-damage" placeholder="例如: 46.6%+15%" required>
+        </div>
+
+        <div class="form-group">
+            <label for="reaction-multiplier" class="optional">元素反应基础倍率：</label>
+            <input type="text" id="reaction-multiplier" placeholder="例如: 1.5 (火元素蒸发、冰元素融化) 或 2.0 (火元素融化、水元素蒸发)">
+        </div>
+
+        <div class="form-group">
+            <label for="elemental-mastery" class="optional">元素精通：</label>
+            <input type="text" id="elemental-mastery" placeholder="例如: 200">
+        </div>
+
+        <div class="form-group">
+            <label for="reaction-bonus" class="optional">反应系数提升：</label>
+            <input type="text" id="reaction-bonus" placeholder="例如: 0.15 (魔女套效果)">
+        </div>
+
+        <div class="form-group">
+            <label for="enemy-resistance" class="optional">怪物抗性：</label>
+            <input type="text" id="enemy-resistance" placeholder="例如: 0.1 (10%抗性)">
+        </div>
+
+        <div class="form-group">
+            <label for="defense-reduction" class="optional">减防系数：</label>
+            <input type="text" id="defense-reduction" placeholder="例如: 0.2 (降低20%防御)">
+        </div>
+
+        <div class="form-group">
+            <label for="damage-boost" class="optional">造成伤害提升：</label>
+            <input type="text" id="damage-boost" placeholder="例如: 8000">
+        </div>
+
+        <div class="form-group">
+            <label for="character-level" class="optional">角色等级：</label>
+            <input type="text" id="character-level" placeholder="例如: 90">
+        </div>
+
+        <div class="form-group">
+            <label for="enemy-level" class="optional">怪物等级：</label>
+            <input type="text" id="enemy-level" placeholder="例如: 103">
+        </div>
+
+        <div class="buttons">
+            <button id="calculate-btn" onclick="calculateDamage()">计算伤害</button>
+            <button id="tutorial-btn" onclick="showTutorial()">使用教程</button>
+        </div>
+
+        <div id="result"></div>
+        
     </div>
 
-    <div class="form-group">
-        <label for="multiplier">倍率：</label>
-        <input type="text" id="multiplier" placeholder="技能/普攻/重击/下落倍率" required>
+    <!-- 教程模态框 -->
+    <div id="tutorial-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTutorial()">&times;</span>
+            <div class="tutorial-header">
+                <h2>原神伤害计算器使用教程</h2>
+                <p>一步一步教您如何使用这个伤害计算器</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3><span class="step-number">1</span>基本使用方法</h3>
+                <p>这个计算器可以帮助您计算原神中角色造成的伤害。您只需要输入相应的数值，计算器会自动计算最终伤害。</p>
+                <p>每个输入框都支持数学表达式，例如：<span class="highlight">2000+500*0.466</span> 或 <span class="highlight">50%+20%</span></p>
+                <p class="note">注意：百分比输入会自动转换为小数，例如输入"50%"会被计算为0.5</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3><span class="step-number">2</span>必填字段说明</h3>
+                <p>以下四个字段是计算伤害的基础，必须填写：</p>
+                <ul>
+                    <li><strong>角色数值</strong>: 角色的基础攻击力/生命值/防御力</li>
+                    <li><strong>倍率</strong>: 技能/普攻/重击/下落攻击的倍率</li>
+                    <li><strong>暴击伤害</strong>: 角色的暴击伤害数值</li>
+                    <li><strong>增伤</strong>: 各种增伤效果的总和</li>
+                </ul>
+                <p class="example">示例: 角色攻击力2000，圣遗物加成46.6%，额外攻击力311 → 输入: 2000+2000*0.466+311</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3><span class="step-number">3</span>元素反应相关</h3>
+                <p>如果需要计算元素反应伤害，请填写以下三项：</p>
+                <ul>
+                    <li><strong>元素反应基础倍率</strong>: 如火打水蒸发、冰打火融化1.5倍，火打冰融化、水打火蒸发2倍，</li>
+                    <li><strong>元素精通</strong>: 提供元素反应加成</li>
+                    <li><strong>反应系数提升</strong>: 
+                        <ul class="defense-examples">
+                            <li>魔女4件套效果：蒸发、融化反应的加成系数提高15%。施放元素战技后的10秒内，该效果最多叠加3次</li>
+                            <li>莫娜一命：蒸发反应造成的伤害提升15%</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p class="example">示例: 火打水蒸发输入1.5，水打火蒸发输入2.0</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3><span class="step-number">4</span>防御与抗性</h3>
+                <p>这部分用于计算敌人的防御减伤和抗性减伤：</p>
+                <ul>
+                    <li><strong>怪物抗性</strong>: 大多数怪物为10%，一些元素生物有更高抗性</li>
+                    <li><strong>减防系数</strong>:
+                        <ul class="defense-examples">
+                            <li>火神2命：焚曜之环附近的敌人的防御力降低20%</li>
+                            <li>雷神2命：奥义·梦想真说的梦想一刀与梦想一心状态下的雷电将军的攻击将无视敌人60%的防御力</li>
+                            <li>可莉2命：蹦蹦炸弹的诡雷会使敌人的防御力降低23%，持续10秒。</li>
+                        </ul>
+                    </li>
+                    <li><strong>角色等级和怪物等级</strong>: 用于计算防御减伤公式</li>
+                </ul>
+                <p class="example">示例: 减防20%输入0.2，怪物10%抗性输入0.1</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3><span class="step-number">5</span>造成伤害提升：</h3>
+                <p>
+                    
+                        <ul class="defense-examples">
+                            <li>火神2命：玛薇卡驰轮车的普通攻击、重击、元素爆发燔天之时中的坠日斩造成的伤害提升，提升值相当于玛薇卡攻击力的60%/90%/120%。</li>
+                            <li>闲云天赋5：开大后，附近的当前场上角色的下落攻击坠地冲击造成的伤害提升，提升值相当于闲云的攻击力的200%。通过这种方式，至多使附近的当前场上角色的下落攻击坠地冲击伤害提升9000(二命为18000)</li>
+                            <li>茜特菈莉1命:释放元素战技后，除茜特菈莉外的附近的当前场上角色的普通攻击、重击、下落攻击、元素战技或元素爆发造成伤害时，提升造成的伤害，提升值相当于茜特菈莉元素精通的200%（十次）</li>
+                        </ul>
+                </p>
+                <p class="note">注意: 虽然是是固定值加成，但也会吃到增伤等效果</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3><span class="step-number">6</span>计算伤害</h3>
+                <p>填写完必要信息后，点击"计算伤害"按钮即可得到结果。</p>
+                <p class="note">提示: 只有前4项是必填的，其他项如果不涉及可以留空。</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3><span class="step-number">7</span>伤害计算公式</h3>
+                <p>最终伤害 = [角色数值 × 倍率 × (1 + 暴击伤害) × (1 + 增伤)] × 元素反应加成 × 抗性减伤 × 防御减伤 + 额外伤害提升</p>
+                <p class="note">您不需要手动计算这些公式，计算器会自动处理所有计算。</p>
+            </div>
+        </div>
     </div>
-
-    <div class="form-group">
-        <label for="crit-damage">暴击伤害：</label>
-        <input type="text" id="crit-damage" placeholder="请输入角色暴击伤害" required>
-    </div>
-
-    <div class="form-group">
-        <label for="bonus-damage">增伤：</label>
-        <input type="text" id="bonus-damage" placeholder="各种增伤相加" required>
-    </div>
-
-    <div class="form-group">
-        <label for="reaction-multiplier" class="optional">元素反应基础倍率：</label>
-        <input type="text" id="reaction-multiplier" placeholder="火打水蒸发1.5倍/融化2倍,水打火蒸发2倍,冰打火融化1.5倍">
-    </div>
-
-    <div class="form-group">
-        <label for="elemental-mastery" class="optional">元素精通：</label>
-        <input type="text" id="elemental-mastery" placeholder="角色元素精通">
-    </div>
-
-    <div class="form-group">
-        <label for="reaction-bonus" class="optional">反应系数提升：</label>
-        <input type="text" id="reaction-bonus" placeholder="例:魔女套、莫娜一命蒸发反应造成伤害提升15%">
-    </div>
-
-    <div class="form-group">
-        <label for="enemy-resistance" class="optional">怪物抗性：</label>
-        <input type="text" id="enemy-resistance" placeholder="大多数怪物抗性为10%">
-    </div>
-
-    <div class="form-group">
-        <label for="defense-reduction" class="optional">减防系数：</label>
-        <input type="text" id="defense-reduction" placeholder="火神二命:焚曜之环附近的敌人的防御力降低20%;雷神二命:奥义·梦想真说的梦想一刀与梦想一心状态下的雷电将军的攻击将无视敌人60%的防御力">
-    </div>
-
-    <div class="form-group">
-        <label for="damage-boost" class="optional">造成伤害提升：</label>
-        <input type="text" id="damage-boost" placeholder="请输入造成伤害提升值,例:火神二命坠日斩造成的伤害提升;闲云天赋5:场上角色的下落攻击坠地冲击造成的伤害提升;茜特菈莉一命提升场上角色造成的伤害">
-    </div>
-
-    <div class="form-group">
-        <label for="character-level" class="optional">角色等级：</label>
-        <input type="text" id="character-level" placeholder="请输入角色等级,不输入则计算直伤">
-    </div>
-
-    <div class="form-group">
-        <label for="enemy-level" class="optional">怪物等级：</label>
-        <input type="text" id="enemy-level" placeholder="请输入怪物等级">
-    </div>
-
-    <button onclick="calculateDamage()" style="background-color: rgb(99,150,232); color: rgb(0, 0, 0); border: none; padding: 10px 20px; cursor: pointer;">计算伤害</button>
-
-    <div id="result"></div>
 
     <script>
         // 计算伤害的函数
@@ -121,6 +424,12 @@
             const damageBoost = parseInput(document.getElementById('damage-boost').value) || 0;
             const characterLevel = parseInput(document.getElementById('character-level').value);
             const enemyLevel = parseInput(document.getElementById('enemy-level').value);
+
+            // 验证必填字段
+            if (baseDamage === null || multiplier === null || critDamage === null || bonusDamage === null) {
+                document.getElementById('result').innerHTML = '<span style="color: red;">请填写必填字段（角色数值、倍率、暴击伤害、增伤）</span>';
+                return;
+            }
 
             // 基础伤害计算
             let finalDamage = baseDamage * multiplier * critDamage * bonusDamage;
@@ -211,6 +520,24 @@
                 return 1;
             }
             return value + 1;
+        }
+
+        // 显示教程
+        function showTutorial() {
+            document.getElementById('tutorial-modal').style.display = 'block';
+        }
+
+        // 关闭教程
+        function closeTutorial() {
+            document.getElementById('tutorial-modal').style.display = 'none';
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('tutorial-modal');
+            if (event.target == modal) {
+                closeTutorial();
+            }
         }
     </script>
 </body>
